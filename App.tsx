@@ -1,28 +1,28 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * My Pet - Virtual Pet Game App
+ * A cute Tamagotchi-style game built with React Native
  *
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import React from 'react';
+import { Provider } from 'react-redux';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { store } from './src/redux/store';
+import { HomeScreen } from './src/screens/HomeScreen';
 
+/**
+ * Main App Component
+ * Wraps the application with Redux and Gesture Handler providers
+ */
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <NewAppScreen templateFileName="App.tsx" />
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <HomeScreen />
+      </Provider>
+    </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;

@@ -1,97 +1,232 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# My Pet - Virtual Pet Game
 
-# Getting Started
+A cute virtual pet game similar to Tamagotchi, built with React Native CLI.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Features
 
-## Step 1: Start Metro
+- 🐱 **Adorable Virtual Pet** - A cute animated pet with mood-based expressions
+- 📊 **Stat Management** - Monitor Hunger, Energy, and Happiness
+- 🎮 **Interactive Actions** - Feed, play, and put your pet to sleep
+- 📈 **XP & Leveling System** - Level up by taking care of your pet
+- ⏰ **Offline Progress** - Stats decay even when the app is closed
+- ✨ **Juicy Animations** - Bounce effects, particles, and smooth transitions
+- 🎨 **Modern UI** - Beautiful color-coded stat bars and card design
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Tech Stack
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- **React Native** 0.80+
+- **TypeScript** for type safety
+- **Redux Toolkit** for state management
+- **React Native Reanimated** for smooth animations
+- **React Native MMKV** for fast persistent storage
+- **React Native Gesture Handler** for touch interactions
+- **React Native Haptics** for tactile feedback
 
-```sh
-# Using npm
+## Installation
+
+### Prerequisites
+
+- Node.js 18 or higher
+- Android Studio (for Android development)
+- Xcode (for iOS development, macOS only)
+
+### Steps
+
+1. **Navigate to the project directory**
+   ```bash
+   cd C:\Users\Admin\PetGame
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Install iOS dependencies (macOS only)**
+   ```bash
+   cd ios && pod install && cd ..
+   ```
+
+4. **Configure native dependencies**
+
+   For Android, the dependencies are usually auto-linked. If you encounter issues:
+   ```bash
+   npx react-native link react-native-gesture-handler
+   npx react-native link react-native-reanimated
+   npx react-native link react-native-mmkv
+   npx react-native link react-native-haptics
+   ```
+
+5. **Configure ProGuard (Android)**
+
+   Add to `android/app/proguard-rules.pro`:
+   ```prolog
+   -keep class com.como.mmkv.MMKV { *; }
+   -keep class com.swmansion.reanimated.ReanimatedPackage { *; }
+   ```
+
+6. **Configure Reanimated (Android)**
+
+   Update `android/app/src/main/java/com/mypet/MainActivity.java`:
+   ```java
+   package com.mypet;
+
+   import com.facebook.react.ReactActivity;
+
+   public class MainActivity extends ReactActivity {
+       @Override
+       protected String getMainComponentName() {
+           return "MyPet";
+       }
+   }
+   ```
+
+## Running the App
+
+### Development Mode
+
+```bash
+# Start the Metro bundler
 npm start
 
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
+# In another terminal, run on Android
 npm run android
 
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+# Or run on iOS (macOS only)
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Building APK
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```bash
+# Debug APK
+npm run build-android-debug
 
-## Step 3: Modify your app
+# Release APK
+npm run build-android
+```
 
-Now that you have successfully run the app, let's make changes!
+The APK files will be located at:
+- Debug: `android/app/build/outputs/apk/debug/app-debug.apk`
+- Release: `android/app/build/outputs/apk/release/app-release.apk`
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## How to Play
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+1. **Feed Your Pet** 🍖
+   - Increases Hunger stat
+   - Awards XP
+   - Triggers heart particles
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+2. **Play with Your Pet** 🎾
+   - Increases Happiness but costs Energy
+   - Awards XP
+   - Triggers star particles
 
-## Congratulations! :tada:
+3. **Put to Sleep** 🌙
+   - Energy regenerates faster while sleeping
+   - Other stats decay slower
+   - Pet shows sleeping expression
 
-You've successfully run and modified your React Native App. :partying_face:
+4. **Level Up** 📈
+   - Every action awards XP
+   - Higher levels unlock titles
+   - XP bonus for keeping stats high
 
-### Now what?
+## Stat Decay
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+- **Online Decay**: Stats decrease gradually while the app is open
+- **Offline Decay**: Stats decrease when the app is closed (capped at 8 hours)
+- **Maximum Offline Penalty**: Stats won't drop below 40% from offline decay
 
-# Troubleshooting
+## Pet Moods
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+- 😊 **Happy**: All stats above 70%
+- 🤩 **Excited**: All stats above 90%
+- 😐 **Idle**: Normal state
+- 😢 **Sad**: Any stat below 40%
+- 🚨 **Critical**: Any stat below 20%
+- 😴 **Sleeping**: When pet is put to sleep
 
-# Learn More
+## Project Structure
 
-To learn more about React Native, take a look at the following resources:
+```
+src/
+├── assets/           # Images, fonts, etc.
+├── components/        # Reusable UI components
+│   ├── Pet.tsx               # Pet character component
+│   ├── StatBar.tsx           # Circular progress bar
+│   ├── ActionButton.tsx      # Animated button
+│   └── ParticleEffect.tsx   # Floating emoji effects
+├── redux/            # State management
+│   ├── store.ts              # Redux store configuration
+│   └── petSlice.ts           # Pet state and reducers
+├── screens/          # Screen components
+│   └── HomeScreen.tsx        # Main game screen
+├── hooks/            # Custom React hooks
+│   ├── useRedux.ts           # Typed Redux hooks
+│   ├── usePetActions.ts      # Pet action functions
+│   └── usePetDecay.ts        # Automatic stat decay
+├── utils/            # Utility functions
+│   ├── constants.ts          # Game constants
+│   └── offlineDecay.ts       # Offline decay calculation
+├── storage/          # Persistent storage
+│   └── mmkv.ts                # MMKV storage setup
+└── types/            # TypeScript definitions
+    └── index.ts              # Type definitions
+```
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## Game Balance
+
+### Decay Rates (per second)
+- Hunger: -0.5
+- Energy: -0.3
+- Happiness: -0.4
+
+### Action Benefits
+- Feed: +25 Hunger
+- Play: +20 Happiness, -10 Energy, -5 Hunger
+- Sleep: +5 Energy per second
+
+### XP System
+- Base XP per action: 10
+- Bonus multiplier: 1.5x (when average stat > 70%)
+- Level 2 requires: 100 XP
+- Each level requires 1.2x more XP
+
+## Troubleshooting
+
+### Metro bundler issues
+```bash
+npm start -- --reset-cache
+```
+
+### Android build issues
+```bash
+cd android
+./gradlew clean
+cd ..
+npm run android
+```
+
+### iOS build issues (macOS)
+```bash
+cd ios
+pod install
+cd ..
+npm run ios
+```
+
+### Reanimated not working
+Ensure you've configured MainActivity.java as shown above and that ProGuard rules are added.
+
+## License
+
+This project is open source and available under the MIT License.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Credits
+
+Built with ❤️ using React Native and TypeScript.

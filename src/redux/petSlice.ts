@@ -4,7 +4,7 @@
  * It includes reducers for all pet actions and persistence logic
  */
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { PetState, PetStats, PetMood, PetAction } from '../types';
 import { saveData, getData, STORAGE_KEYS } from '../storage/mmkv';
 import {
@@ -111,6 +111,51 @@ const processLevelUp = (currentXP: number, currentLevel: number): number => {
 };
 
 /**
+ * Async thunk to initialize pet state from storage
+ * This should be called when the app first loads
+ * Handles offline decay calculation
+ */
+export const initializePet = createAsyncThunk(
+  'pet/initialize',
+  async () => {
+    try {
+      const savedState = await getData<PetState | null>(STORAGE_KEYS.PET_STATE, null);
+
+      if (savedState) {
+        // Apply offline decay to loaded stats
+        const decayedStats = calculateOfflineDecay(savedState.stats, savedState.lastOpened);
+
+        return {
+          stats: decayedStats,
+          xp: savedState.xp,
+          level: savedState.level,
+          lastOpened: Date.now(),
+          isSleeping: false, // Always wake up when returning to app
+          mood: calculateMood(decayedStats, false),
+        };
+      }
+
+      // First time playing - return initial state
+      return createInitialPetState();
+    } catch (error) {
+      console.error('Error initializing pet state:', error);
+      return createInitialPetState();
+    }
+  }
+);
+
+/**
+ * Async thunk to save pet state to storage
+ */
+const persistState = async (state: PetState): Promise<void> => {
+  try {
+    await saveData(STORAGE_KEYS.PET_STATE, state);
+  } catch (error) {
+    console.error('Error saving pet state:', error);
+  }
+};
+
+/**
  * Pet Slice
  * Manages all pet state and actions
  */
@@ -118,34 +163,6 @@ const petSlice = createSlice({
   name: 'pet',
   initialState: createInitialPetState(),
   reducers: {
-    /**
-     * Initialize the pet state from storage
-     * This should be called when the app first loads
-     * Handles offline decay calculation
-     */
-    initializePet: (state) => {
-      // Load saved state from storage
-      const savedState = getData<PetState>(STORAGE_KEYS.PET_STATE, null);
-
-      if (savedState) {
-        // Apply offline decay to loaded stats
-        const decayedStats = calculateOfflineDecay(savedState.stats, savedState.lastOpened);
-
-        state.stats = decayedStats;
-        state.xp = savedState.xp;
-        state.level = savedState.level;
-        state.lastOpened = Date.now();
-        state.isSleeping = false; // Always wake up when returning to app
-        state.mood = calculateMood(decayedStats, false);
-
-        // Save the updated state
-        saveData(STORAGE_KEYS.PET_STATE, state);
-      } else {
-        // First time playing - save initial state
-        saveData(STORAGE_KEYS.PET_STATE, state);
-      }
-    },
-
     /**
      * Feed the pet
      * Increases hunger stat and awards XP
@@ -166,8 +183,8 @@ const petSlice = createSlice({
       // Update mood
       state.mood = calculateMood(state.stats, state.isSleeping);
 
-      // Persist
-      saveData(STORAGE_KEYS.PET_STATE, state);
+      // Trigger async save (fire and forget)
+      persistState(state as PetState);
     },
 
     /**
@@ -192,8 +209,8 @@ const petSlice = createSlice({
       // Update mood
       state.mood = calculateMood(state.stats, state.isSleeping);
 
-      // Persist
-      saveData(STORAGE_KEYS.PET_STATE, state);
+      // Trigger async save
+      persistState(state as PetState);
     },
 
     /**
@@ -206,8 +223,8 @@ const petSlice = createSlice({
       state.isSleeping = true;
       state.mood = PetMood.SLEEPING;
 
-      // Persist
-      saveData(STORAGE_KEYS.PET_STATE, state);
+      // Trigger async save
+      persistState(state as PetState);
     },
 
     /**
@@ -219,8 +236,8 @@ const petSlice = createSlice({
       state.isSleeping = false;
       state.mood = calculateMood(state.stats, false);
 
-      // Persist
-      saveData(STORAGE_KEYS.PET_STATE, state);
+      // Trigger async save
+      persistState(state as PetState);
     },
 
     /**
@@ -242,8 +259,8 @@ const petSlice = createSlice({
       // Update mood
       state.mood = calculateMood(state.stats, state.isSleeping);
 
-      // Persist periodically (you might want to throttle this)
-      saveData(STORAGE_KEYS.PET_STATE, state);
+      // Trigger async save (you might want to throttle this)
+      persistState(state as PetState);
     },
 
     /**
@@ -253,14 +270,22 @@ const petSlice = createSlice({
     resetPet: (state) => {
       const initialState = createInitialPetState();
       Object.assign(state, initialState);
-      saveData(STORAGE_KEYS.PET_STATE, state);
+      persistState(state as PetState);
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(initializePet.fulfilled, (state, action) => {
+        // Update state with loaded data
+        Object.assign(state, action.payload);
+        // Save the loaded state
+        persistState(state as PetState);
+      });
   },
 });
 
 // Export actions
 export const {
-  initializePet,
   feedPet,
   playPet,
   sleepPet,

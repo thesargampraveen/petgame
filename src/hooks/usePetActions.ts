@@ -5,7 +5,7 @@
  */
 
 import { useCallback } from 'react';
-import { useAppDispatch } from '../redux/store';
+import { useAppDispatch } from './useRedux';
 import {
   feedPet,
   playPet,

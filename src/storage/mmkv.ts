@@ -1,20 +1,10 @@
 /**
- * MMKV Storage Setup
- * This file configures and exports the MMKV instance for persistent storage
- * MMKV is a fast, efficient key-value storage solution for React Native
+ * AsyncStorage Setup
+ * This file configures and exports AsyncStorage for persistent storage
+ * AsyncStorage is a simple key-value storage solution for React Native
  */
 
-import { MMKV } from 'react-native-mmkv';
-
-/**
- * Create a new MMKV instance
- * We use a single instance with encryption disabled for simplicity
- * For production apps, consider enabling encryption with a secure key
- */
-export const storage = new MMKV({
-  id: 'my-pet-game-storage',
-  // encryptionKey: 'your-encryption-key-here', // Optional: enable for sensitive data
-});
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * Storage keys - constants for all stored values
@@ -37,9 +27,10 @@ export const STORAGE_KEYS = {
  * @param key - Storage key
  * @param value - Value to store (must be JSON-serializable)
  */
-export const saveData = <T>(key: string, value: T): void => {
+export const saveData = async <T>(key: string, value: T): Promise<void> => {
   try {
-    storage.set(key, JSON.stringify(value));
+    const jsonValue = JSON.stringify(value);
+    await AsyncStorage.setItem(key, jsonValue);
   } catch (error) {
     console.error(`Error saving data for key "${key}":`, error);
   }
@@ -51,11 +42,11 @@ export const saveData = <T>(key: string, value: T): void => {
  * @param defaultValue - Default value if key doesn't exist
  * @returns The stored value or default value
  */
-export const getData = <T>(key: string, defaultValue: T): T => {
+export const getData = async <T>(key: string, defaultValue: T): Promise<T> => {
   try {
-    const data = storage.getString(key);
-    if (data) {
-      return JSON.parse(data) as T;
+    const jsonValue = await AsyncStorage.getItem(key);
+    if (jsonValue != null) {
+      return JSON.parse(jsonValue) as T;
     }
     return defaultValue;
   } catch (error) {
@@ -68,9 +59,9 @@ export const getData = <T>(key: string, defaultValue: T): T => {
  * Remove a specific key from storage
  * @param key - Storage key to remove
  */
-export const removeData = (key: string): void => {
+export const removeData = async (key: string): Promise<void> => {
   try {
-    storage.delete(key);
+    await AsyncStorage.removeItem(key);
   } catch (error) {
     console.error(`Error removing data for key "${key}":`, error);
   }
@@ -80,9 +71,9 @@ export const removeData = (key: string): void => {
  * Clear all stored data
  * Useful for testing or reset functionality
  */
-export const clearAllData = (): void => {
+export const clearAllData = async (): Promise<void> => {
   try {
-    storage.clearAll();
+    await AsyncStorage.clear();
   } catch (error) {
     console.error('Error clearing all data:', error);
   }
@@ -93,9 +84,10 @@ export const clearAllData = (): void => {
  * @param key - Storage key to check
  * @returns True if key exists, false otherwise
  */
-export const hasKey = (key: string): boolean => {
+export const hasKey = async (key: string): Promise<boolean> => {
   try {
-    return storage.contains(key);
+    const value = await AsyncStorage.getItem(key);
+    return value !== null;
   } catch (error) {
     console.error(`Error checking key "${key}":`, error);
     return false;
@@ -106,9 +98,9 @@ export const hasKey = (key: string): boolean => {
  * Get all keys from storage
  * @returns Array of all stored keys
  */
-export const getAllKeys = (): string[] => {
+export const getAllKeys = async (): Promise<string[]> => {
   try {
-    return storage.getAllKeys();
+    return await AsyncStorage.getAllKeys();
   } catch (error) {
     console.error('Error getting all keys:', error);
     return [];

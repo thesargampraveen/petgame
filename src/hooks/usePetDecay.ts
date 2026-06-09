@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '../redux/store';
+import { useAppDispatch, useAppSelector } from './useRedux';
 import { applyDecay, selectIsSleeping } from '../redux/petSlice';
 
 /**

@@ -26,7 +26,7 @@ import Animated, {
   Easing,
   runOnJS,
 } from 'react-native-reanimated';
-import * as Haptics from 'react-native-haptics';
+import RNHapticFeedback from 'react-native-haptic-feedback';
 import { COLORS, UI_CONFIG, ANIMATION_CONFIG } from '../utils/constants';
 
 /**
@@ -74,7 +74,10 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
    */
   const triggerHaptic = () => {
     try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      RNHapticFeedback.trigger('impactMedium', {
+        enableVibrateFallback: true,
+        ignoreAndroidSystemSettings: false,
+      });
     } catch (error) {
       // Haptics might not be available on all devices
       console.warn('Haptic feedback not available:', error);

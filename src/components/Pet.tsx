@@ -35,6 +35,8 @@ export interface PetProps {
   triggerBounce?: boolean;
   /** Callback when bounce animation completes */
   onBounceComplete?: () => void;
+  /** Whether pet is eating (shows eating animation) */
+  isEating?: boolean;
   /** Optional test ID */
   testID?: string;
 }
@@ -47,6 +49,7 @@ export const Pet: React.FC<PetProps> = ({
   mood,
   triggerBounce = false,
   onBounceComplete,
+  isEating = false,
   testID,
 }) => {
   // Scale for bounce animation
@@ -56,6 +59,11 @@ export const Pet: React.FC<PetProps> = ({
   // Idle animation (breathing effect)
   const breatheScale = useSharedValue(1);
   const bounceY = useSharedValue(0);
+
+  // Eating animation values
+  const mouthOpen = useSharedValue(0);
+  const foodVisible = useSharedValue(1);
+  const headTilt = useSharedValue(0);
 
   // Track if bounce is in progress
   const bounceInProgress = useRef(false);
@@ -96,6 +104,39 @@ export const Pet: React.FC<PetProps> = ({
       false
     );
   }, []);
+
+  /**
+   * Handle eating animation
+   */
+  useEffect(() => {
+    if (isEating) {
+      // Head tilts forward while eating
+      headTilt.value = withSequence(
+        withTiming(5, { duration: 200 }),
+        withTiming(-5, { duration: 300 }),
+        withTiming(5, { duration: 300 }),
+        withTiming(0, { duration: 200 })
+      );
+
+      // Mouth opens and closes (chewing)
+      mouthOpen.value = withRepeat(
+        withSequence(
+          withTiming(1, { duration: 250 }),
+          withTiming(0, { duration: 250 })
+        ),
+        3, // 3 chewing cycles
+        false
+      );
+
+      // Food fades out at the end
+      foodVisible.value = withTiming(0, { duration: 800, delay: 500 });
+    } else {
+      // Reset values when not eating
+      mouthOpen.value = 0;
+      headTilt.value = 0;
+      foodVisible.value = 1;
+    }
+  }, [isEating]);
 
   /**
    * Trigger bounce animation when requested
@@ -143,6 +184,40 @@ export const Pet: React.FC<PetProps> = ({
    * Get the face expression based on mood
    */
   const getFaceExpression = (): React.ReactElement => {
+    // If eating, override with eating expression
+    if (isEating) {
+      return (
+        <G>
+          {/* Happy closed eyes while eating */}
+          <Path
+            d="M95 85 Q105 75 115 85"
+            stroke="#2D2D2D"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <Path
+            d="M145 85 Q155 75 165 85"
+            stroke="#2D2D2D"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+          {/* Open mouth for eating */}
+          <Ellipse
+            cx="130"
+            cy="125"
+            rx="12"
+            ry="10"
+            fill="#8B4513"
+          />
+          {/* Rosy cheeks */}
+          <Circle cx="85" cy="105" r="10" fill="#FFB6C1" opacity={0.8} />
+          <Circle cx="175" cy="105" r="10" fill="#FFB6C1" opacity={0.8} />
+        </G>
+      );
+    }
+
     switch (mood) {
       case PetMood.HAPPY:
         return (
@@ -312,7 +387,17 @@ export const Pet: React.FC<PetProps> = ({
     transform: [
       { scale: scale.value * breatheScale.value },
       { translateY: bounceY.value },
-      { rotateZ: `${rotation.value}deg` },
+      { rotateZ: `${rotation.value + headTilt.value}deg` },
+    ],
+  }));
+
+  /**
+   * Animated style for food visibility
+   */
+  const foodAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: foodVisible.value,
+    transform: [
+      { translateY: withSpring(foodVisible.value > 0.5 ? 0 : -20) },
     ],
   }));
 
@@ -358,6 +443,20 @@ export const Pet: React.FC<PetProps> = ({
           <Ellipse cx="210" cy="150" rx="18" ry="25" fill={getBodyColor()} />
         </Svg>
       </Animated.View>
+
+      {/* Food element (shown when eating) */}
+      {isEating && (
+        <Animated.View style={[styles.foodContainer, foodAnimatedStyle]}>
+          <Svg width={60} height={60} viewBox="0 0 60 60">
+            {/* Meat bone */}
+            <Ellipse cx="30" cy="30" rx="18" ry="12" fill="#8B4513" />
+            <Circle cx="12" cy="30" r="6" fill="#F5DEB3" />
+            <Circle cx="48" cy="30" r="6" fill="#F5DEB3" />
+            {/* Bone shine */}
+            <Ellipse cx="28" cy="25" rx="8" ry="4" fill="#FFFFFF" opacity={0.4} />
+          </Svg>
+        </Animated.View>
+      )}
     </View>
   );
 };
@@ -369,5 +468,10 @@ const styles = StyleSheet.create({
   },
   petContainer: {
     // Size is set by the SVG viewBox
+  },
+  foodContainer: {
+    position: 'absolute',
+    right: 20,
+    top: 80,
   },
 });

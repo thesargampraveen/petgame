@@ -19,6 +19,7 @@ import {
   ScrollView,
   StatusBar,
 } from 'react-native';
+import Svg, { Circle, Path, Ellipse } from 'react-native-svg';
 import { useAppDispatch, useAppSelector } from '../hooks/useRedux';
 import { Pet } from '../components/Pet';
 import { StatBar } from '../components/StatBar';
@@ -58,6 +59,7 @@ export const HomeScreen: React.FC = () => {
   const [bounceTrigger, setBounceTrigger] = useState(false);
   const [particleVisible, setParticleVisible] = useState(false);
   const [particleType, setParticleType] = useState<'heart' | 'star' | 'zzz' | 'sparkle'>('heart');
+  const [isEating, setIsEating] = useState(false);
 
   // Initialize pet state on mount
   useEffect(() => {
@@ -82,6 +84,9 @@ export const HomeScreen: React.FC = () => {
     setBounceTrigger(true);
     setParticleType('heart');
     setParticleVisible(true);
+    setIsEating(true);
+    // Reset eating state after animation
+    setTimeout(() => setIsEating(false), 1500);
   }, [feed]);
 
   /**
@@ -122,6 +127,9 @@ export const HomeScreen: React.FC = () => {
    * Get background color based on mood
    */
   const getBackgroundColor = (): string => {
+    if (isSleeping) {
+      return '#1A1A2E'; // Dark night blue
+    }
     switch (mood) {
       case PetMood.HAPPY:
       case PetMood.EXCITED:
@@ -130,8 +138,6 @@ export const HomeScreen: React.FC = () => {
         return '#ECEFF1'; // Cool gray
       case PetMood.CRITICAL:
         return '#FFEBEE'; // Light red
-      case PetMood.SLEEPING:
-        return '#E8EAF6'; // Soft purple
       default:
         return '#F5F5F7'; // Default light gray
     }
@@ -165,7 +171,30 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: getBackgroundColor() }]}>
-      <StatusBar barStyle="dark-content" backgroundColor={getBackgroundColor()} />
+      <StatusBar barStyle={isSleeping ? "light-content" : "dark-content"} backgroundColor={getBackgroundColor()} />
+
+      {/* Sleep background elements */}
+      {isSleeping && (
+        <View style={styles.sleepBackground}>
+          <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+            {/* Moon */}
+            <Circle cx="50" cy="60" r="25" fill="#FFF9C4" opacity={0.8} />
+            <Circle cx="42" cy="52" r="5" fill="#F5F5F5" opacity={0.6} />
+            <Circle cx="55" cy="70" r="3" fill="#F5F5F5" opacity={0.5} />
+
+            {/* Stars */}
+            <Circle cx="100" cy="40" r="2" fill="#FFF" opacity={0.9} />
+            <Circle cx="150" cy="80" r="2.5" fill="#FFF" opacity={0.8} />
+            <Circle cx="200" cy="50" r="2" fill="#FFF" opacity={0.9} />
+            <Circle cx="250" cy="90" r="1.5" fill="#FFF" opacity={0.7} />
+            <Circle cx="280" cy="30" r="2" fill="#FFF" opacity={0.8} />
+            <Circle cx="320" cy="70" r="2.5" fill="#FFF" opacity={0.9} />
+            <Circle cx="80" cy="100" r="2" fill="#FFF" opacity={0.6} />
+            <Circle cx="180" cy="120" r="1.5" fill="#FFF" opacity={0.7} />
+            <Circle cx="300" cy="110" r="2" fill="#FFF" opacity={0.8} />
+          </Svg>
+        </View>
+      )}
 
       <ScrollView
         style={styles.scrollView}
@@ -179,13 +208,13 @@ export const HomeScreen: React.FC = () => {
               <Text style={styles.levelNumber}>{level}</Text>
             </View>
             <View style={styles.levelInfo}>
-              <Text style={styles.levelTitle}>{levelTitle}</Text>
-              <Text style={styles.xpText}>
+              <Text style={isSleeping ? styles.levelTitleSleep : styles.levelTitle}>{levelTitle}</Text>
+              <Text style={isSleeping ? styles.xpTextSleep : styles.xpText}>
                 {xp} / {xpForNextLevel} XP
               </Text>
             </View>
           </View>
-          <Text style={styles.welcomeMessage}>{getWelcomeMessage()}</Text>
+          <Text style={isSleeping ? styles.welcomeMessageSleep : styles.welcomeMessage}>{getWelcomeMessage()}</Text>
         </View>
 
         {/* Pet display */}
@@ -194,6 +223,7 @@ export const HomeScreen: React.FC = () => {
             mood={mood}
             triggerBounce={bounceTrigger}
             onBounceComplete={handleBounceComplete}
+            isEating={isEating}
           />
           <ParticleEffect
             visible={particleVisible}
@@ -279,10 +309,19 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    zIndex: 1,
   },
   scrollContent: {
     paddingVertical: 20,
     paddingHorizontal: 16,
+  },
+  sleepBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
   },
   header: {
     alignItems: 'center',
@@ -320,13 +359,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.TEXT_PRIMARY,
   },
+  levelTitleSleep: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
   xpText: {
     fontSize: 14,
     color: COLORS.TEXT_SECONDARY,
   },
+  xpTextSleep: {
+    fontSize: 14,
+    color: '#B0BEC5',
+  },
   welcomeMessage: {
     fontSize: 16,
     color: COLORS.TEXT_SECONDARY,
+    textAlign: 'center',
+  },
+  welcomeMessageSleep: {
+    fontSize: 16,
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   petSection: {

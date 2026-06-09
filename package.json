@@ -19,7 +19,7 @@
     "react-native": "0.80.0",
     "react-native-gesture-handler": "^2.14.0",
     "react-native-haptic-feedback": "^3.0.0",
-    "react-native-reanimated": "^3.6.0",
+    "react-native-reanimated": "^3.19.5",
     "react-native-svg": "^15.15.5",
     "react-redux": "^9.0.4"
   },

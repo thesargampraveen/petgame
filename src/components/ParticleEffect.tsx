@@ -68,26 +68,26 @@ const Particle: React.FC<ParticleProps> = ({
   useEffect(() => {
     // Start with a pop-in effect
     scale.value = withSequence(
-      withTiming(1.2, { duration: 100, easing: Easing.out(Easing.quad) }),
-      withTiming(1, { duration: 100, easing: Easing.inOut(Easing.quad) })
+      withTiming(1.2, { duration: 100, easing: Easing.out(Easing.exp) }),
+      withTiming(1, { duration: 100, easing: Easing.inOut(Easing.sin) })
     );
 
     // Float upward and fade out
     translateX.value = withTiming(driftX, {
       duration,
-      easing: Easing.out(Easing.quad),
+      easing: Easing.out(Easing.exp),
     });
 
     translateY.value = withTiming(-150, {
       duration,
-      easing: Easing.out(Easing.quad),
+      easing: Easing.out(Easing.exp),
     });
 
     opacity.value = withSequence(
       withTiming(1, { duration: 200 }),
       withTiming(0, {
         duration: duration - 200,
-        easing: Easing.in(Easing.quad),
+        easing: Easing.in(Easing.cubic),
       })
     );
 

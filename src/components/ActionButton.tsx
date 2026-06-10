@@ -102,7 +102,7 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
   const handlePressOut = () => {
     // First return to normal scale, then bounce
     scale.value = withSequence(
-      withTiming(1, { duration: 100, easing: Easing.out(Easing.quad) }),
+      withTiming(1, { duration: 100, easing: Easing.out(Easing.exp) }),
       withSpring(1.05, {
         damping: 8,
         stiffness: 500,

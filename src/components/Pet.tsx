@@ -77,11 +77,11 @@ export const Pet: React.FC<PetProps> = ({
       withSequence(
         withTiming(1.02, {
           duration: 1500,
-          easing: Easing.inOut(Easing.sine),
+          easing: Easing.inOut(Easing.sin),
         }),
         withTiming(1, {
           duration: 1500,
-          easing: Easing.inOut(Easing.sine),
+          easing: Easing.inOut(Easing.sin),
         })
       ),
       -1, // Infinite repeat
@@ -93,11 +93,11 @@ export const Pet: React.FC<PetProps> = ({
       withSequence(
         withTiming(-5, {
           duration: 1000,
-          easing: Easing.inOut(Easing.sine),
+          easing: Easing.inOut(Easing.sin),
         }),
         withTiming(0, {
           duration: 1000,
-          easing: Easing.inOut(Easing.sine),
+          easing: Easing.inOut(Easing.sin),
         })
       ),
       -1,

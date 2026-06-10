@@ -63,7 +63,7 @@ export const StatBar: React.FC<StatBarProps> = ({ value, label, icon, testID }) 
   useEffect(() => {
     progress.value = withTiming(value / 100, {
       duration: 600,
-      easing: Easing.bezier(0.4, 0, 0.2, 1),
+      easing: Easing.ease,
     });
   }, [value, progress]);
 

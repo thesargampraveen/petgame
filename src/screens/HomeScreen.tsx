@@ -18,6 +18,7 @@ import {
   SafeAreaView,
   ScrollView,
   StatusBar,
+  Modal,
 } from 'react-native';
 import Svg, { Circle, Path, Ellipse } from 'react-native-svg';
 import { useAppDispatch, useAppSelector } from '../hooks/useRedux';
@@ -38,6 +39,7 @@ import {
 } from '../redux/petSlice';
 import { PetMood } from '../types';
 import { COLORS, getLevelTitle, getXPForLevel } from '../utils/constants';
+import { GameScreen } from './GameScreen';
 
 /**
  * HomeScreen Component
@@ -60,6 +62,7 @@ export const HomeScreen: React.FC = () => {
   const [particleVisible, setParticleVisible] = useState(false);
   const [particleType, setParticleType] = useState<'heart' | 'star' | 'zzz' | 'sparkle'>('heart');
   const [isEating, setIsEating] = useState(false);
+  const [showGame, setShowGame] = useState(false);
 
   // Initialize pet state on mount
   useEffect(() => {
@@ -97,11 +100,24 @@ export const HomeScreen: React.FC = () => {
       // Too tired to play
       return;
     }
-    play();
+    setShowGame(true);
+  }, [stats.energy]);
+
+  /**
+   * Handle game end - award XP based on score
+   */
+  const handleGameEnd = useCallback((gameScore: number) => {
+    setShowGame(false);
+    // Award XP based on score (1 XP per 10 points)
+    const xpGained = Math.floor(gameScore / 10);
+    if (xpGained > 0) {
+      // Play action gains happiness and awards XP
+      play();
+    }
     setBounceTrigger(true);
     setParticleType('star');
     setParticleVisible(true);
-  }, [play, stats.energy]);
+  }, [play]);
 
   /**
    * Handle sleep/wake action
@@ -299,6 +315,15 @@ export const HomeScreen: React.FC = () => {
           </View>
         )}
       </ScrollView>
+
+      {/* Game Modal */}
+      <Modal
+        visible={showGame}
+        animationType="slide"
+        onRequestClose={() => setShowGame(false)}
+      >
+        <GameScreen onGameEnd={handleGameEnd} />
+      </Modal>
     </SafeAreaView>
   );
 };
